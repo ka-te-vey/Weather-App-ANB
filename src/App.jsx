@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Cloud, CloudRain, CloudSnow, Sun, Droplets, Wind, MapPin } from "lucide-react";
+import { Droplets, Wind, MapPin } from "lucide-react";
+import humidity from './assets/humidity.png';
+import rain from './assets/rain.png';
+import summer from './assets/summer.png';
+import sunWithCloud from './assets/sun-with-cloud.png';
+import winter from './assets/winter.png';
 
 function App() {
   const [currentWeather, setCurrentWeather] = useState(null);
@@ -7,28 +12,66 @@ function App() {
   const [searchedWeather, setSearchedWeather] = useState(null);
   const [searchedForecast, setSearchedForecast] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState("");
   const [city, setCity] = useState("");
 
   const apiKey = "6d055e39ee237af35ca066f35474e9df";
 
-  const getWeatherIcon = (desc) => {
-    if (!desc) return <Cloud className="w-28 h-28 text-gray-400" />;
+  // Weather images object
+  const weatherImages = {
+    rain: rain,
+    summer: summer,
+    sunWithCloud: sunWithCloud,
+    winter: winter,
+    humidity: humidity
+  };
+
+  // Get local weather image based on description AND temperature
+  const getWeatherImage = (desc, temp) => {
+    if (!desc) return weatherImages.sunWithCloud;
+    
     const description = desc.toLowerCase();
-    if (description.includes("rain")) {
-      return <CloudRain className="w-28 h-28 text-blue-400" />;
+    const temperature = temp || 0;
+    
+    // If it's very cold (below 10°C), prioritize winter imagery
+    if (temperature <= 10) {
+      if (description.includes("snow")) {
+        return weatherImages.winter;
+      } else if (description.includes("rain") || description.includes("drizzle")) {
+        return weatherImages.rain;
+      } else if (temperature <= 3) {
+        // Very cold - show winter even if clear/cloudy
+        return weatherImages.winter;
+      } else {
+        // Cold but not freezing (4-10°C) - show clouds
+        return weatherImages.sunWithCloud;
+      }
+    }
+    
+    // Normal temperature logic (above 10°C)
+    if (description.includes("rain") || description.includes("drizzle")) {
+      return weatherImages.rain;
     } else if (description.includes("snow")) {
-      return <CloudSnow className="w-28 h-28 text-blue-200" />;
+      return weatherImages.winter;
     } else if (description.includes("clear")) {
-      return <Sun className="w-28 h-28 text-yellow-400" />;
+      return weatherImages.summer;
+    } else if (description.includes("cloud")) {
+      return weatherImages.sunWithCloud;
+    } else if (description.includes("mist") || description.includes("fog") || description.includes("haze")) {
+      return weatherImages.sunWithCloud;
     } else {
-      return <Cloud className="w-28 h-28 text-gray-400" />;
+      return weatherImages.sunWithCloud;
     }
   };
 
   const fetchWeatherData = async (cityName, isCurrentLocation = false) => {
     try {
-      if (!isCurrentLocation) setLoading(true);
+      if (isCurrentLocation) {
+        setLoading(true);
+      } else {
+        setSearchLoading(true);
+      }
       setError("");
 
       const response = await fetch(
@@ -51,28 +94,46 @@ function App() {
       };
 
       const daily = data.list
-        .filter((item) => item.dt_txt.includes("12:00:00"))
+        .filter((item) => {
+          const time = item.dt_txt.split(' ')[1];
+          return time === "12:00:00" || time === "15:00:00" || time === "09:00:00";
+        })
+        .reduce((acc, day) => {
+          const date = day.dt_txt.split(' ')[0];
+          if (!acc.find(d => d.date === date)) {
+            acc.push({
+              date: date,
+              temp: Math.round(day.main.temp),
+              desc: day.weather[0].description,
+            });
+          }
+          return acc;
+        }, [])
         .slice(0, 5)
         .map((day) => ({
-          date: new Date(day.dt_txt).toLocaleDateString("en-US", { weekday: "short" }),
-          temp: Math.round(day.main.temp),
-          desc: day.weather[0].description,
-          icon: day.weather[0].icon,
+          date: new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }),
+          temp: day.temp,
+          desc: day.desc,
         }));
 
       if (isCurrentLocation) {
         setCurrentWeather(weatherData);
         setCurrentForecast(daily);
+        setLoading(false);
       } else {
         setSearchedWeather(weatherData);
         setSearchedForecast(daily);
+        setSearchLoading(false);
       }
-      
-      setLoading(false);
     } catch (err) {
       console.error("Error:", err);
       setError(err.message);
-      setLoading(false);
+      setTimeout(() => setError(""), 3000);
+      if (isCurrentLocation) {
+        setLoading(false);
+      } else {
+        setSearchLoading(false);
+      }
     }
   };
 
@@ -100,11 +161,11 @@ function App() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8 flex flex-col items-center">
       {/* Header */}
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
-          <h1 className="text-blue-600 text-3xl font-bold">🌦️ Weather Forecast</h1>
+      <div className="max-w-4xl w-full px-4">
+        <div className="flex flex-col items-center gap-4 mb-8 w-full">
+          <h1 className="text-blue-600 text-3xl font-bold text-center">🌦️ Weather Forecast</h1>
           
           {/* Search Box */}
           <div className="flex gap-2">
@@ -127,7 +188,7 @@ function App() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 max-w-2xl mx-auto text-center">
             {error}
           </div>
         )}
@@ -139,12 +200,13 @@ function App() {
           </div>
         )}
 
-        {/* Weather Grid */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Current Location */}
-          {currentWeather && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        {/* Weather Cards Container */}
+        <div className="flex flex-col items-center justify-center w-full gap-8 max-w-lg mx-auto">
+          
+          {/* Current Location Weather - Only show if no searched city */}
+          {currentWeather && !searchedWeather && !searchLoading && (
+            <div className="w-full">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
                 Your Location
               </h2>
               
@@ -159,7 +221,11 @@ function App() {
                 </p>
 
                 <div className="flex justify-center py-6">
-                  {getWeatherIcon(currentWeather.desc)}
+                  <img 
+                    src={getWeatherImage(currentWeather.desc, currentWeather.temp)} 
+                    alt={currentWeather.desc}
+                    className="w-32 h-32 object-contain"
+                  />
                 </div>
 
                 <h1 className="text-5xl font-medium text-center">
@@ -195,23 +261,24 @@ function App() {
               {/* Forecast */}
               {currentForecast.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">
                     5-Day Forecast
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-5 gap-2">
                     {currentForecast.map((day, index) => (
                       <div
                         key={index}
-                        className="bg-white shadow-md py-4 px-3 rounded-lg text-center hover:shadow-lg transition"
+                        className="bg-white shadow-md py-3 px-2 rounded-lg text-center hover:shadow-lg transition"
                       >
-                        <p className="font-semibold text-lg">{day.date}</p>
-                        <img
-                          src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
-                          alt="weather"
-                          className="mx-auto w-16 h-16"
-                        />
-                        <p className="text-xl font-bold text-blue-600">{day.temp}°C</p>
-                        <p className="text-sm text-gray-600 capitalize">{day.desc}</p>
+                        <p className="font-semibold text-sm">{day.date}</p>
+                        <div className="flex justify-center items-center h-12 my-2">
+                          <img 
+                            src={getWeatherImage(day.desc, day.temp)} 
+                            alt={day.desc}
+                            className="w-12 h-12 object-contain"
+                          />
+                        </div>
+                        <p className="text-lg font-bold text-blue-600">{day.temp}°C</p>
                       </div>
                     ))}
                   </div>
@@ -220,10 +287,17 @@ function App() {
             </div>
           )}
 
-          {/* Searched City */}
-          {searchedWeather && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          {/* Search Loading */}
+          {searchLoading && (
+            <div className="text-gray-700 text-center text-lg">
+              <div className="animate-pulse">Searching...</div>
+            </div>
+          )}
+
+          {/* Searched City Weather */}
+          {searchedWeather && !searchLoading && (
+            <div className="w-full">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
                 Search Results
               </h2>
               
@@ -237,7 +311,11 @@ function App() {
                 </p>
 
                 <div className="flex justify-center py-6">
-                  {getWeatherIcon(searchedWeather.desc)}
+                  <img 
+                    src={getWeatherImage(searchedWeather.desc, searchedWeather.temp)} 
+                    alt={searchedWeather.desc}
+                    className="w-32 h-32 object-contain"
+                  />
                 </div>
 
                 <h1 className="text-5xl font-medium text-center">
@@ -273,36 +351,51 @@ function App() {
               {/* Forecast */}
               {searchedForecast.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">
                     5-Day Forecast
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-5 gap-2">
                     {searchedForecast.map((day, index) => (
                       <div
                         key={index}
-                        className="bg-white shadow-md py-4 px-3 rounded-lg text-center hover:shadow-lg transition"
+                        className="bg-white shadow-md py-3 px-2 rounded-lg text-center hover:shadow-lg transition"
                       >
-                        <p className="font-semibold text-lg">{day.date}</p>
-                        <img
-                          src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
-                          alt="weather"
-                          className="mx-auto w-16 h-16"
-                        />
-                        <p className="text-xl font-bold text-blue-600">{day.temp}°C</p>
-                        <p className="text-sm text-gray-600 capitalize">{day.desc}</p>
+                        <p className="font-semibold text-sm">{day.date}</p>
+                        <div className="flex justify-center items-center h-12 my-2">
+                          <img 
+                            src={getWeatherImage(day.desc, day.temp)} 
+                            alt={day.desc}
+                            className="w-12 h-12 object-contain"
+                          />
+                        </div>
+                        <p className="text-lg font-bold text-blue-600">{day.temp}°C</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Back to Current Location Button */}
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => {
+                    setSearchedWeather(null);
+                    setSearchedForecast([]);
+                  }}
+                  className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Back to Your Location
+                </button>
+              </div>
             </div>
           )}
+
         </div>
 
         {/* Empty State */}
-        {!loading && currentWeather && !searchedWeather && (
+        {!loading && currentWeather && !searchedWeather && !searchLoading && (
           <div className="text-gray-600 text-center mt-10">
-            <p className="text-lg">Search for a city to compare weather</p>
+            <p className="text-lg">Search for a city to see its current weather</p>
           </div>
         )}
       </div>
