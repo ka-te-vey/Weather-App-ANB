@@ -8,22 +8,22 @@
   }
 }
 
-/* Center the entire app */
+
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical */
-  align-items: center;     /* horizontal */
+  justify-content: center;
+  align-items: center;     
   margin: 0;
 }
 
-/* Center the weather UI block */
+
 .weather-center {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   justify-content: center;
   align-items: center;
-  width: 100%; /* optional */
+  width: 100%; 
 }
