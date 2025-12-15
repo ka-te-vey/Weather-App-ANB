@@ -3,7 +3,7 @@ const ForecastList = ({ forecast }) => {
 
   return (
     <div className="w-full mt-6">
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">5-Day Forecast</h3>
+      <h3 className="text-xl font-semibold text-white mb-4">5-Day Forecast</h3>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {forecast.map((day, index) => (
           <div key={index} className="bg-white shadow-md py-4 px-5 rounded-lg text-center text-black hover:shadow-lg transition">
