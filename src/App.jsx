@@ -5,6 +5,7 @@ import rain from "./assets/rain.png";
 import summer from "./assets/summer.png";
 import sunWithCloud from "./assets/sun-with-cloud.png";
 import winter from "./assets/winter.png";
+import "./App.css";
 
 function App() {
   const [weather, setWeather] = useState(null);
@@ -99,121 +100,124 @@ function App() {
   });
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto w-full overflow-y-auto">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
-          <h1 className="text-blue-600 text-3xl font-bold">🌦️ Weather Forecast</h1>
-          
-          {/* Search Box */}
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder="Enter city name..."
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="border border-gray-300 p-2 rounded-lg w-full sm:w-60 outline-none focus:border-blue-500"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition w-full sm:w-auto"
-            >
-              Search
-            </button>
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Loading */}
-        {loading && !weather && (
-          <div className="text-gray-700 text-center text-lg mt-10">
-            <div className="animate-pulse">Loading weather data...</div>
-          </div>
-        )}
-
-        {/* Weather Display */}
-        {weather && (
-          <div className="max-w-2xl mx-auto">
-            {/* Weather Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-center gap-2">
-                <h2 className="text-2xl font-semibold">{weather.city}</h2>
-                <MapPin className="w-5 h-5 text-blue-500" />
-              </div>
-              <p className="text-gray-600 text-center mt-1">
-                {date.toLocaleDateString("en-US", { weekday: "long" })} {formattedTime}
-              </p>
-
-              <div className="flex justify-center py-6">
-                {getWeatherIcon(weather.desc, weather.temp)}
-              </div>
-
-              <h1 className="text-5xl font-medium text-center">
-                {Math.round(weather.temp)}°C
-              </h1>
-              <p className="text-gray-700 text-center mt-2 italic capitalize">
-                {weather.desc}
-              </p>
-
-              <div className="flex gap-4 mt-8 justify-center flex-wrap">
-                <div className="border border-blue-300 p-4 flex items-center gap-3 rounded-xl shadow">
-                  <img src={humidity} alt="humidity icon" className="w-10 h-10" />
-                  <div>
-                    <p className="text-gray-700 font-medium">Humidity</p>
-                    <p className="text-blue-500 font-bold text-lg">
-                      {weather.humidity}%
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border border-blue-300 p-4 flex items-center gap-3 rounded-xl shadow">
-                  <Wind className="w-10 h-10 text-blue-500" />
-                  <div>
-                    <p className="text-gray-700 font-medium">Wind</p>
-                    <p className="text-blue-500 font-bold text-lg">
-                      {weather.wind} m/s
-                    </p>
-                  </div>
-                </div>
-              </div>
+    <div className="app-container">
+      <div className="background"></div>
+      <div className="content-container">
+        {/* Header */}
+        <div className="max-w-6xl mx-auto w-full overflow-y-auto">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
+            <h1 className="text-black text-3xl font-bold">🌦️ Weather Forecast</h1>
+            
+            {/* Search Box */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Enter city name..."
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="border border-gray-300 p-2 rounded-lg w-full sm:w-60 outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={handleSearch}
+                className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition w-full sm:w-auto"
+              >
+                Search
+              </button>
             </div>
+          </div>
 
-            {/* Forecast */}
-            {forecast.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                  5-Day Forecast
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-                  {forecast.map((day, index) => (
-                    <div
-                      key={index}
-                      className="bg-white shadow-md py-4 px-3 rounded-lg text-center hover:shadow-lg transition border border-gray-200"
-                    >
-                      <p className="font-semibold text-lg">{day.date}</p>
-                      <div className="w-16 h-16 mx-auto">
-                        {getWeatherIcon(day.desc, day.temp, "w-16 h-16")}
-                      </div>
-                      <p className="text-xl font-bold text-blue-600">{day.temp}°C</p>
-                      <div className="text-xs text-gray-500">
-                        <p>Min: {day.temp_min}°C</p>
-                        <p>Max: {day.temp_max}°C</p>
-                      </div>
-                      <p className="text-sm text-gray-600 capitalize mt-1">{day.desc}</p>
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              {error}
+            </div>
+          )}
+
+          {/* Loading */}
+          {loading && !weather && (
+            <div className="text-gray-700 text-center text-lg mt-10">
+              <div className="animate-pulse">Loading weather data...</div>
+            </div>
+          )}
+
+          {/* Weather Display */}
+          {weather && (
+            <div className="max-w-2xl mx-auto">
+              {/* Weather Card */}
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-center gap-2">
+                  <h2 className="text-2xl font-semibold">{weather.city}</h2>
+                  <MapPin className="w-5 h-5 text-blue-500" />
+                </div>
+                <p className="text-gray-600 text-center mt-1">
+                  {date.toLocaleDateString("en-US", { weekday: "long" })} {formattedTime}
+                </p>
+
+                <div className="flex justify-center py-6">
+                  {getWeatherIcon(weather.desc, weather.temp)}
+                </div>
+
+                <h1 className="text-5xl font-medium text-center">
+                  {Math.round(weather.temp)}°C
+                </h1>
+                <p className="text-gray-700 text-center mt-2 italic capitalize">
+                  {weather.desc}
+                </p>
+
+                <div className="flex gap-4 mt-8 justify-center flex-wrap">
+                  <div className="border border-blue-300 p-4 flex items-center gap-3 rounded-xl shadow">
+                    <img src={humidity} alt="humidity icon" className="w-10 h-10" />
+                    <div>
+                      <p className="text-gray-700 font-medium">Humidity</p>
+                      <p className="text-blue-500 font-bold text-lg">
+                        {weather.humidity}%
+                      </p>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="border border-blue-300 p-4 flex items-center gap-3 rounded-xl shadow">
+                    <Wind className="w-10 h-10 text-blue-500" />
+                    <div>
+                      <p className="text-gray-700 font-medium">Wind</p>
+                      <p className="text-blue-500 font-bold text-lg">
+                        {weather.wind} m/s
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Forecast */}
+              {forecast.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    5-Day Forecast
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+                    {forecast.map((day, index) => (
+                      <div
+                        key={index}
+                        className="bg-white shadow-md py-4 px-3 rounded-lg text-center hover:shadow-lg transition border border-gray-200"
+                      >
+                        <p className="font-semibold text-lg">{day.date}</p>
+                        <div className="w-16 h-16 mx-auto">
+                          {getWeatherIcon(day.desc, day.temp, "w-16 h-16")}
+                        </div>
+                        <p className="text-xl font-bold text-blue-600">{day.temp}°C</p>
+                        <div className="text-xs text-gray-500">
+                          <p>Min: {day.temp_min}°C</p>
+                          <p>Max: {day.temp_max}°C</p>
+                        </div>
+                        <p className="text-sm text-gray-600 capitalize mt-1">{day.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
